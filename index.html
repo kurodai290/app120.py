@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>リアル会社経営シミュレータ</title>
+    <style>
+        body { background: #1e1e24; color: #fff; font-family: monospace; padding: 20px; }
+        .board { border: 1px solid #444; padding: 15px; margin-bottom: 10px; background: #2a2a35; }
+        button { background: #4caf50; color: white; padding: 10px; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>CEO 経営ダッシュボード</h1>
+    
+    <div class="board">
+        <h3>【財務状態】</h3>
+        <p>現金 (Cash): <span id="cash">1,000,000</span> 円</p>
+        <p>在庫 (Inventory): <span id="stock">0</span> 個</p>
+        <p>銀行借入金 (Loan): <span id="loan">0</span> 円</p>
+    </div>
+
+    <button onclick="buyStock()">1個 5,000円で資材を仕入れる</button>
+    <button onclick="nextMonth()">1ヶ月時間を進める（固定費発生）</button>
+
+    <script>
+        // 経営データを管理する変数（JavaScript）
+        let cash = 1000000;
+        let stock = 0;
+        let loan = 0;
+        const RENT = 100000; // 毎月のオフィス家賃
+
+        function buyStock() {
+            if (cash >= 5000) {
+                cash -= 5000;
+                stock += 1;
+                updateUI();
+            } else { alert("資金が足りません！"); }
+        }
+
+        function nextMonth() {
+            cash -= RENT; // 家賃の支払い
+            if (cash < 0) { alert("資金ショート！倒産しました。"); }
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('cash').innerText = cash.toLocaleString();
+            document.getElementById('stock').innerText = stock;
+            document.getElementById('loan').innerText = loan.toLocaleString();
+        }
+    </script>
+</body>
+</html>
