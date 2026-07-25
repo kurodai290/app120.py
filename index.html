@@ -3,44 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced CEO Simulator Pro</title>
+    <title>Stable CEO Simulator</title>
     <style>
-        body { background: #121214; color: #e0e0e6; font-family: 'Courier New', Courier, monospace; padding: 20px; margin: 0; }
+        body { background: #121214; color: #e0e0e6; font-family: monospace; padding: 20px; }
         h1, h2, h3 { color: #00ff66; border-bottom: 1px solid #333; padding-bottom: 5px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .card { background: #1a1a24; border: 1px solid #2d2d3d; padding: 15px; border-radius: 5px; }
         .btn-group { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
-        button { background: #22c55e; color: #000; border: none; padding: 10px 15px; font-weight: bold; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        button { background: #22c55e; color: #000; border: none; padding: 10px 15px; font-weight: bold; border-radius: 4px; cursor: pointer; }
         button:hover { background: #4ade80; }
         button.danger { background: #ef4444; color: #fff; }
-        button.danger:hover { background: #f87171; }
         .log-box { background: #000; color: #00ff66; padding: 10px; height: 150px; overflow-y: scroll; font-size: 13px; border: 1px solid #333; margin-top: 10px; }
-        .history-box { background: #111; color: #aaa; padding: 10px; height: 150px; overflow-y: scroll; font-size: 13px; border: 1px solid #333; margin-top: 10px; }
-        .alert-text { color: #ff3333; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h1>👔 Advanced CEO Simulator <span style="font-size: 14px; color:#888;">v2.1 Stable</span></h1>
+    <h1>👔 Stable CEO Simulator</h1>
     
-    <!-- ランダムイベント通知枠 -->
     <div class="card" style="border-left: 5px solid #00ff66; margin-bottom: 20px;">
         <strong>【今月の世界情勢イベント】</strong>
-        <p id="event-text">特記すべきイベントはありません。安定した市場環境です。</p>
+        <p id="event-text">安定した市場環境です。</p>
     </div>
 
     <div class="grid">
-        <!-- 財務・ステータスボード -->
+        <!-- 財務ボード -->
         <div class="card">
-            <h2>📊 財務諸表 & 経営指標</h2>
+            <h2>📊 経営指標</h2>
             <p><strong>ゲーム内時間:</strong> <span id="lbl-term">1</span> ヶ月目</p>
             <p><strong>手元現金 (Cash):</strong> <span id="lbl-cash">2,000,000</span> 円</p>
             <p><strong>原材料在庫 (Raw Materials):</strong> <span id="lbl-raw">0</span> 単位</p>
             <p><strong>製品在庫 (Inventory):</strong> <span id="lbl-product">0</span> 個</p>
             <hr style="border-color:#333;">
             <p><strong>自社ブランド認知度:</strong> <span id="lbl-brand">10</span> %</p>
-            <p><strong>社員数:</strong> <span id="lbl-staff">1</span> 名 (平均月給: 250,000円)</p>
-            <p><strong>社員の不満度:</strong> <span id="lbl-stress">0</span> % <span id="lbl-labor-alert" class="alert-text"></span></p>
+            <p><strong>社員数:</strong> <span id="lbl-staff">1</span> 名</p>
+            <p><strong>社員の不満度:</strong> <span id="lbl-stress">0</span> %</p>
             <p><strong>為替レート:</strong> 1ドル = <span id="lbl-fx">150</span> 円</p>
         </div>
 
@@ -50,41 +46,32 @@
             
             <h3>【1. サプライチェーン】</h3>
             <div class="btn-group">
-                <button onclick="buyRawMaterial()">原材料を海外から仕入れる (100ドル/単位)</button>
-                <button onclick="produceProduct()">製品を製造する (要:原材料1)</button>
+                <button id="btn-buy">原材料を海外から仕入れる (100ドル/単位)</button>
+                <button id="btn-make">製品を製造する (要:原材料1)</button>
             </div>
 
             <h3>【2. マーケティング & 人事】</h3>
             <div class="btn-group">
-                <button onclick="spendMarketing()">広告費を投入する (300,000円 / 認知度+15%)</button>
-                <button onclick="hireStaff()">求人募集・社員を1名採用する</button>
-                <button onclick="raiseWelfare()">福利厚生を強化する (150,000円 / 不満度-20%)</button>
+                <button id="btn-adv">広告費を投入する (300,000円 / 認知度+15%)</button>
+                <button id="btn-hire">求人募集・社員を1名採用する</button>
+                <button id="btn-care">福利厚生を強化する (150,000円 / 不満度-20%)</button>
             </div>
 
             <h3>【3. ターン進行】</h3>
             <div class="btn-group">
-                <button class="danger" onclick="nextMonth()" style="padding: 15px 30px; font-size: 16px;">⏱ 決算を行い、翌月へ進む</button>
+                <button id="btn-next" class="danger" style="padding: 15px 30px; font-size: 16px;">⏱ 決算を行い、翌月へ進む</button>
             </div>
         </div>
     </div>
 
-    <div class="grid" style="margin-top: 20px;">
-        <!-- 経営ログ -->
-        <div class="card">
-            <h2>📜 社内CEO業務日誌</h2>
-            <div id="log" class="log-box"></div>
-        </div>
-        <!-- 資産推移の履歴表示 -->
-        <div class="card">
-            <h2>📈 総資産額の推移（月次レポート）</h2>
-            <div id="history" class="history-box">
-                <div>1ヶ月目スタート: 総資産 2,000,000 円</div>
-            </div>
-        </div>
+    <div style="margin-top: 20px;" class="card">
+        <h2>📜 社内CEO業務日誌</h2>
+        <div id="log" class="log-box"></div>
     </div>
 
+    <!-- ここからプログラム（HTMLの読み込みエラー対策として一番下に配置） -->
     <script>
-        // --- 1. 初期経営データ（変数） ---
+        // データ変数
         let cash = 2000000;
         let rawMaterials = 0;
         let products = 0;
@@ -95,155 +82,141 @@
         let fxRate = 150; 
         let baseProductPrice = 12000; 
 
-        // --- 2. 各種経営コマンドの実装 ---
+        // ログ記録
+        function logAction(text) {
+            let logBox = document.getElementById("log");
+            logBox.innerHTML += text + "<br>";
+            logBox.scrollTop = logBox.scrollHeight; 
+        }
 
-        // 原材料の海外仕入れ
-        function buyRawMaterial() {
+        // 表示の更新
+        function updateUI() {
+            document.getElementById("lbl-term").innerText = term;
+            document.getElementById("lbl-cash").innerText = cash.toLocaleString();
+            document.getElementById("lbl-raw").innerText = rawMaterials;
+            document.getElementById("lbl-product").innerText = products;
+            document.getElementById("lbl-brand").innerText = brandRecognition;
+            document.getElementById("lbl-staff").innerText = staffCount;
+            document.getElementById("lbl-stress").innerText = staffStress;
+            document.getElementById("lbl-fx").innerText = fxRate;
+        }
+
+        // --- 各ボタンの動作登録（エラー対策方式） ---
+        
+        // 仕入れ
+        document.getElementById("btn-buy").addEventListener("click", function() {
             let costInYen = Math.round(100 * fxRate); 
             if (cash >= costInYen) {
                 cash -= costInYen;
                 rawMaterials += 1;
-                logAction("[購買] 原材料を1単位仕入れました。為替影響により " + costInYen.toLocaleString() + "円 消費。");
+                logAction("[購買] 原材料を仕入れました。費用: " + costInYen.toLocaleString() + "円");
                 updateUI();
-            } else {
-                alert("現金が不足しており原材料を仕入れられません！");
-            }
-        }
+            } else { alert("現金が不足しています！"); }
+        });
 
-        // 製品の製造
-        function produceProduct() {
+        // 製造
+        document.getElementById("btn-make").addEventListener("click", function() {
             if (rawMaterials >= 1) {
                 rawMaterials -= 1;
                 products += 1;
-                logAction("[製造] 工場を稼働し、原材料から製品を1個製造しました。");
+                logAction("[製造] 製品を1個製造しました。");
                 updateUI();
-            } else {
-                alert("原材料がありません！まずは仕入れてください。");
-            }
-        }
+            } else { alert("原材料がありません！"); }
+        });
 
-        // マーケティング
-        function spendMarketing() {
+        // 広告
+        document.getElementById("btn-adv").addEventListener("click", function() {
             if (cash >= 300000) {
                 cash -= 300000;
                 brandRecognition = Math.min(100, brandRecognition + 15);
-                logAction("[宣伝] 大規模な広告キャンペーンを展開。ブランド認知度が15%向上しました。");
+                logAction("[宣伝] 広告によりブランド認知度が15%向上。");
                 updateUI();
-            } else {
-                alert("広告費を払う現金がありません！");
-            }
-        }
+            } else { alert("広告費が足りません！"); }
+        });
 
-        // 社員の採用
-        function hireStaff() {
+        // 採用
+        document.getElementById("btn-hire").addEventListener("click", function() {
             if (cash >= 100000) { 
                 cash -= 100000;
                 staffCount += 1;
-                logAction("[人事] 求人媒体を使い、新規社員を1名採用しました。(計 " + staffCount + "名)");
+                logAction("[人事] 新規社員を1名採用しました。(計 " + staffCount + "名)");
                 updateUI();
-            } else {
-                alert("求人広告を出す現金（10万円）がありません。");
-            }
-        }
+            } else { alert("採用資金が足りません。"); }
+        });
 
-        // 福利厚生の強化
-        function raiseWelfare() {
+        // 福利厚生
+        document.getElementById("btn-care").addEventListener("click", function() {
             if (cash >= 150000) {
                 cash -= 150000;
                 staffStress = Math.max(0, staffStress - 20);
-                logAction("[労務] 社内環境を改善し、特別手当を支給。社員の不満度が20%下がりました。");
+                logAction("[労務] 社員福利厚生を強化。不満度-20%");
                 updateUI();
-            } else {
-                alert("福利厚生に回す現金がありません。");
-            }
-        }
+            } else { alert("資金が足りません。"); }
+        });
 
-        // --- 3. 翌月進行 ---
-        function nextMonth() {
+        // 翌月進行
+        document.getElementById("btn-next").addEventListener("click", function() {
             logAction("--- 【" + term + "ヶ月目 決算報告】 ---");
 
-            // ① 販売フェーズ
+            // 販売
             let maxSales = Math.floor((brandRecognition / 100) * 5) + 1; 
             let actualSales = Math.min(products, maxSales);
             if (actualSales > 0) {
                 let salesRevenue = actualSales * baseProductPrice;
                 cash += salesRevenue;
                 products -= actualSales;
-                logAction("[営業] 今月は製品が " + actualSales + " 個売れ、売上高 " + salesRevenue.toLocaleString() + "円 を計上しました。");
+                logAction("[営業] 製品が " + actualSales + " 個売れ、売上 " + salesRevenue.toLocaleString() + "円。");
             } else if (products > 0) {
-                logAction("[営業] 認知度が低く、製品の認知に至りませんでした。売上ゼロ（在庫リスク発生）。");
+                logAction("[営業] 認知度が低く売上ゼロ。");
             }
 
-            // ② 固定費の発生
+            // 固定費
             let salaryCost = staffCount * 250000;
             let officeRent = 150000;
             let totalFixedCost = salaryCost + officeRent;
             cash -= totalFixedCost;
-            logAction("[財務] 固定費発生: 人件費 " + salaryCost.toLocaleString() + "円、オフィス家賃 " + officeRent.toLocaleString() + "円。");
+            logAction("[財務] 固定費引き落とし: " + totalFixedCost.toLocaleString() + "円。");
 
-            // ③ 人事リスク
-            if (staffCount > 0) {
-                staffStress = Math.min(100, staffStress + 8); 
-            }
+            // 不満蓄積
+            if (staffCount > 0) { staffStress = Math.min(100, staffStress + 8); }
 
-            // ④ 資金ショート判定
+            // 倒産判定
             if (cash < 0) {
-                alert("【ゲームオーバー】手元現金が底をつき、不渡りを出しました。" + term + "ヶ月目で倒産です。");
+                alert("【倒産】手元現金が底をつきました。ゲームオーバーです。");
                 location.reload();
                 return;
             }
 
-            // ⑤ 年末の法人税徴収
-            if (term % 12 === 0) {
-                let tax = Math.round(cash * 0.25); 
-                if (tax > 0) {
-                    cash -= tax;
-                    logAction("[税務] ★年次決算★ 国税局より法人税として " + tax.toLocaleString() + "円 が強制徴収されました。");
-                }
-            }
-
-            // ⑥ ランダム経済サイクルイベントの発生
-            triggerRandomEvent();
-
-            // ⏱ ターン更新と履歴レポートの追加
-            term += 1;
-            let currentNetWorth = cash + (products * baseProductPrice) + (rawMaterials * Math.round(100 * fxRate));
-            
-            // 履歴ボックスへテキストを追加
-            let historyBox = document.getElementById("history");
-            historyBox.innerHTML += "<div>" + term + "ヶ月目決算: 総資産 " + currentNetWorth.toLocaleString() + " 円</div>";
-            historyBox.scrollTop = historyBox.scrollHeight;
-
-            updateUI();
-        }
-
-        // ランダム経済イベント
-        function triggerRandomEvent() {
+            // ランダムイベント
             let rand = Math.random();
             let eventText = document.getElementById("event-text");
-
-            if (rand < 0.2) {
+            if (rand < 0.25) {
                 fxRate = 165; 
-                eventText.innerText = "【外国為替：歴史的な円安が進行】 1ドル=165円に突入。海外からの原材料仕入れコストが大幅に高騰中！";
+                eventText.innerText = "【円安進行】1ドル=165円。仕入れコスト上昇中！";
                 eventText.style.color = "#ff3333";
-            } else if (rand < 0.4) {
+            } else if (rand < 0.5) {
                 fxRate = 120; 
-                eventText.innerText = "【外国為替：急激な円高に振れる】 1ドル=120円に突入。海外原材料を激安で仕入れる大チャンス！";
+                eventText.innerText = "【円高進行】1ドル=120円。仕入れの大チャンス！";
                 eventText.style.color = "#00ff66";
-            } else if (rand < 0.55 && staffStress > 50) {
+            } else if (rand < 0.7 && staffStress > 50) {
                 let penalty = staffCount * 200000;
                 cash -= penalty;
                 staffStress = 10;
-                eventText.innerText = "【事件：労働基準監督署のガサ入れ】 社員の不満爆発。法令違反が発覚し、罰金 " + penalty.toLocaleString() + "円 の支払い命令！";
+                eventText.innerText = "【労務監督署ガサ入れ】罰金 " + penalty.toLocaleString() + "円。";
                 eventText.style.color = "#ff3333";
-                logAction("[警告] 労基ペナルティにより " + penalty.toLocaleString() + "円 損失。");
-            } else if (rand < 0.7) {
-                baseProductPrice = 18000; 
-                eventText.innerText = "【市場経済：業界空前の大ブーム到来】 消費マインドが加熱！製品の市場価格が一時的に1.5倍（18,000円）に上昇。";
-                eventText.style.color = "#00ff66";
             } else {
                 fxRate = 150;
-                baseProductPrice = 12000;
-                eventText.innerText = "特記すべきイベントはありません。安定した市場環境です。";
+                eventText.innerText = "安定した市場環境です。";
                 eventText.style.color = "#e0e0e6";
             }
+
+            term += 1;
+            updateUI();
+        });
+
+        // 初回起動
+        updateUI();
+        logAction("[システム] 経営シミュレータが起動しました。手元資金200万円。");
+    </script>
+</body>
+</html>
