@@ -93,7 +93,7 @@
         let term = 1;
         let fxRate = 150; // 1ドル当たりの円
         let baseProductPrice = 12000; // 製品の基本売価
-        let netWorthHistory =;
+        let netWorthHistory =; // 修正：初期データを入れました
         let labelHistory = ["1ヶ月目"];
 
         // --- 2. 各種経営コマンドの実装 ---
@@ -111,7 +111,7 @@
             }
         }
 
-        // 製品の製造（社員がいれば一瞬で製造できる仕様）
+        // 製品の製造
         function produceProduct() {
             if (rawMaterials >= 1) {
                 rawMaterials -= 1;
@@ -123,7 +123,7 @@
             }
         }
 
-        // マーケティング（市場シェア拡大）
+        // マーケティング
         function spendMarketing() {
             if (cash >= 300000) {
                 cash -= 300000;
@@ -147,7 +147,7 @@
             }
         }
 
-        // 福利厚生の強化（不満度コントロール）
+        // 福利厚生の強化
         function raiseWelfare() {
             if (cash >= 150000) {
                 cash -= 150000;
@@ -159,11 +159,11 @@
             }
         }
 
-        // --- 3. 翌月進行（コアな経営計算とランダムイベント） ---
+        // --- 3. 翌月進行 ---
         function nextMonth() {
             logAction(`--- 【${term}ヶ月目 決算報告】 ---`);
 
-            // ① 販売フェーズ（認知度が高いほど、在庫がまとめて多く売れるリアル設計）
+            // ① 販売フェーズ
             let maxSales = Math.floor((brandRecognition / 100) * 5) + 1; 
             let actualSales = Math.min(products, maxSales);
             if (actualSales > 0) {
@@ -175,28 +175,28 @@
                 logAction("[営業] 認知度が低く、製品の認知に至りませんでした。売上ゼロ（在庫リスク発生）。");
             }
 
-            // ② 固定費の発生（人件費＋家賃）
+            // ② 固定費の発生
             let salaryCost = staffCount * 250000;
             let officeRent = 150000;
             let totalFixedCost = salaryCost + officeRent;
             cash -= totalFixedCost;
             logAction(`[財務] 固定費発生: 人件費 ${salaryCost.toLocaleString()}円、オフィス家賃 ${officeRent.toLocaleString()}円。`);
 
-            // ③ 人事リスク（福利厚生コストをケチると毎月不満が蓄積する）
+            // ③ 人事リスク
             if (staffCount > 0) {
-                staffStress = Math.min(100, staffStress + 8); // 毎月ベースで8%不満が溜まる
+                staffStress = Math.min(100, staffStress + 8); 
             }
 
-            // ④ 資金ショート（黒字倒産）判定
+            // ④ 資金ショート判定
             if (cash < 0) {
                 alert(`【ゲームオーバー】手元現金が底をつき、不渡りを出しました。${term}ヶ月目で倒産です。`);
                 location.reload();
                 return;
             }
 
-            // ⑤ 年末（12ヶ月に一回）の法人税徴収システム
+            // ⑤ 年末の法人税徴収
             if (term % 12 === 0) {
-                let tax = Math.round(cash * 0.25); // 簡易的に現金の25%を法人税として徴収
+                let tax = Math.round(cash * 0.25); 
                 if (tax > 0) {
                     cash -= tax;
                     logAction(`[税務] ★年次決算★ 国税局より法人税として ${tax.toLocaleString()}円 が強制徴収されました。`);
@@ -216,21 +216,20 @@
             updateChart();
         }
 
-        // ランダム経済イベント（ゲームにスパイスを与える）
+        // ランダム経済イベント
         function triggerRandomEvent() {
             let rand = Math.random();
             let eventText = document.getElementById("event-text");
 
             if (rand < 0.2) {
-                fxRate = 165; // 円安
+                fxRate = 165; 
                 eventText.innerText = "【外国為替：歴史的な円安が進行】 1ドル=165円に突入。海外からの原材料仕入れコストが大幅に高騰中！";
                 eventText.style.color = "#ff3333";
             } else if (rand < 0.4) {
-                fxRate = 120; // 円高
+                fxRate = 120; 
                 eventText.innerText = "【外国為替：急激な円高に振れる】 1ドル=120円に突入。海外原材料を激安で仕入れる大チャンス！";
                 eventText.style.color = "#00ff66";
             } else if (rand < 0.55 && staffStress > 50) {
-                // 労基ガサ入れ（ブラック企業ペナルティ）
                 let penalty = staffCount * 200000;
                 cash -= penalty;
                 staffStress = 10;
@@ -238,9 +237,16 @@
                 eventText.style.color = "#ff3333";
                 logAction(`[警告] 労基ペナルティにより ${penalty.toLocaleString()}円 損失。`);
             } else if (rand < 0.7) {
-                baseProductPrice = 18000; // バブル
+                baseProductPrice = 18000; 
                 eventText.innerText = "【市場経済：業界空前の大ブーム到来】 消費マインドが加熱！製品の市場価格が一時的に1.5倍（18,000円）に上昇。";
                 eventText.style.color = "#00ff66";
             } else {
                 fxRate = 150;
                 baseProductPrice = 12000;
+                eventText.innerText = "特記すべきイベントはありません。安定した市場環境です。";
+                eventText.style.color = "#e0e0e6";
+            }
+        }
+
+        // UI表示の更新
+        function updateUI() {
