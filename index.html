@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced CEO Simulator Pro</title>
-    <!-- グラフ表示用の外部ライブラリ (Chart.js) -->
-    <script src="https://jsdelivr.net"></script>
     <style>
         body { background: #121214; color: #e0e0e6; font-family: 'Courier New', Courier, monospace; padding: 20px; margin: 0; }
         h1, h2, h3 { color: #00ff66; border-bottom: 1px solid #333; padding-bottom: 5px; }
@@ -16,13 +14,14 @@
         button:hover { background: #4ade80; }
         button.danger { background: #ef4444; color: #fff; }
         button.danger:hover { background: #f87171; }
-        .log-box { background: #000; color: #00ff66; padding: 10px; height: 120px; overflow-y: scroll; font-size: 13px; border: 1px solid #333; margin-top: 10px; }
+        .log-box { background: #000; color: #00ff66; padding: 10px; height: 150px; overflow-y: scroll; font-size: 13px; border: 1px solid #333; margin-top: 10px; }
+        .history-box { background: #111; color: #aaa; padding: 10px; height: 150px; overflow-y: scroll; font-size: 13px; border: 1px solid #333; margin-top: 10px; }
         .alert-text { color: #ff3333; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h1>👔 Advanced CEO Simulator <span style="font-size: 14px; color:#888;">v2.0 Premium</span></h1>
+    <h1>👔 Advanced CEO Simulator <span style="font-size: 14px; color:#888;">v2.1 Stable</span></h1>
     
     <!-- ランダムイベント通知枠 -->
     <div class="card" style="border-left: 5px solid #00ff66; margin-bottom: 20px;">
@@ -75,10 +74,12 @@
             <h2>📜 社内CEO業務日誌</h2>
             <div id="log" class="log-box"></div>
         </div>
-        <!-- 財務リアルタイムチャート -->
+        <!-- 資産推移の履歴表示 -->
         <div class="card">
-            <h2>📈 純資産推移グラフ (Net Worth Chart)</h2>
-            <canvas id="netWorthChart" style="width:100%; height:180px;"></canvas>
+            <h2>📈 総資産額の推移（月次レポート）</h2>
+            <div id="history" class="history-box">
+                <div>1ヶ月目スタート: 総資産 2,000,000 円</div>
+            </div>
         </div>
     </div>
 
@@ -87,24 +88,22 @@
         let cash = 2000000;
         let rawMaterials = 0;
         let products = 0;
-        let brandRecognition = 10; // 認知度 (%)
+        let brandRecognition = 10; 
         let staffCount = 1;
-        let staffStress = 0; // 不満度 (%)
+        let staffStress = 0; 
         let term = 1;
-        let fxRate = 150; // 1ドル当たりの円
-        let baseProductPrice = 12000; // 製品の基本売価
-        let netWorthHistory =; // 修正：初期データを入れました
-        let labelHistory = ["1ヶ月目"];
+        let fxRate = 150; 
+        let baseProductPrice = 12000; 
 
         // --- 2. 各種経営コマンドの実装 ---
 
-        // 原材料の海外仕入れ（為替の影響をモロに受ける）
+        // 原材料の海外仕入れ
         function buyRawMaterial() {
-            let costInYen = Math.round(100 * fxRate); // 100ドルを円換算
+            let costInYen = Math.round(100 * fxRate); 
             if (cash >= costInYen) {
                 cash -= costInYen;
                 rawMaterials += 1;
-                logAction(`[購買] 原材料を1単位仕入れました。為替影響により ${costInYen.toLocaleString()}円 消費。`);
+                logAction("[購買] 原材料を1単位仕入れました。為替影響により " + costInYen.toLocaleString() + "円 消費。");
                 updateUI();
             } else {
                 alert("現金が不足しており原材料を仕入れられません！");
@@ -137,10 +136,10 @@
 
         // 社員の採用
         function hireStaff() {
-            if (cash >= 100000) { // 採用コスト
+            if (cash >= 100000) { 
                 cash -= 100000;
                 staffCount += 1;
-                logAction(`[人事] 求人媒体を使い、新規社員を1名採用しました。(計 ${staffCount}名)`);
+                logAction("[人事] 求人媒体を使い、新規社員を1名採用しました。(計 " + staffCount + "名)");
                 updateUI();
             } else {
                 alert("求人広告を出す現金（10万円）がありません。");
@@ -161,7 +160,7 @@
 
         // --- 3. 翌月進行 ---
         function nextMonth() {
-            logAction(`--- 【${term}ヶ月目 決算報告】 ---`);
+            logAction("--- 【" + term + "ヶ月目 決算報告】 ---");
 
             // ① 販売フェーズ
             let maxSales = Math.floor((brandRecognition / 100) * 5) + 1; 
@@ -170,7 +169,7 @@
                 let salesRevenue = actualSales * baseProductPrice;
                 cash += salesRevenue;
                 products -= actualSales;
-                logAction(`[営業] 今月は製品が ${actualSales} 個売れ、売上高 ${salesRevenue.toLocaleString()}円 を計上しました。`);
+                logAction("[営業] 今月は製品が " + actualSales + " 個売れ、売上高 " + salesRevenue.toLocaleString() + "円 を計上しました。");
             } else if (products > 0) {
                 logAction("[営業] 認知度が低く、製品の認知に至りませんでした。売上ゼロ（在庫リスク発生）。");
             }
@@ -180,7 +179,7 @@
             let officeRent = 150000;
             let totalFixedCost = salaryCost + officeRent;
             cash -= totalFixedCost;
-            logAction(`[財務] 固定費発生: 人件費 ${salaryCost.toLocaleString()}円、オフィス家賃 ${officeRent.toLocaleString()}円。`);
+            logAction("[財務] 固定費発生: 人件費 " + salaryCost.toLocaleString() + "円、オフィス家賃 " + officeRent.toLocaleString() + "円。");
 
             // ③ 人事リスク
             if (staffCount > 0) {
@@ -189,7 +188,7 @@
 
             // ④ 資金ショート判定
             if (cash < 0) {
-                alert(`【ゲームオーバー】手元現金が底をつき、不渡りを出しました。${term}ヶ月目で倒産です。`);
+                alert("【ゲームオーバー】手元現金が底をつき、不渡りを出しました。" + term + "ヶ月目で倒産です。");
                 location.reload();
                 return;
             }
@@ -199,21 +198,23 @@
                 let tax = Math.round(cash * 0.25); 
                 if (tax > 0) {
                     cash -= tax;
-                    logAction(`[税務] ★年次決算★ 国税局より法人税として ${tax.toLocaleString()}円 が強制徴収されました。`);
+                    logAction("[税務] ★年次決算★ 国税局より法人税として " + tax.toLocaleString() + "円 が強制徴収されました。");
                 }
             }
 
             // ⑥ ランダム経済サイクルイベントの発生
             triggerRandomEvent();
 
-            // ⏱ ターン更新とグラフデータの保存
+            // ⏱ ターン更新と履歴レポートの追加
             term += 1;
             let currentNetWorth = cash + (products * baseProductPrice) + (rawMaterials * Math.round(100 * fxRate));
-            netWorthHistory.push(currentNetWorth);
-            labelHistory.push(`${term}ヶ月目`);
             
+            // 履歴ボックスへテキストを追加
+            let historyBox = document.getElementById("history");
+            historyBox.innerHTML += "<div>" + term + "ヶ月目決算: 総資産 " + currentNetWorth.toLocaleString() + " 円</div>";
+            historyBox.scrollTop = historyBox.scrollHeight;
+
             updateUI();
-            updateChart();
         }
 
         // ランダム経済イベント
@@ -233,9 +234,9 @@
                 let penalty = staffCount * 200000;
                 cash -= penalty;
                 staffStress = 10;
-                eventText.innerText = `【事件：労働基準監督署のガサ入れ】 社員の不満爆発。法令違反が発覚し、罰金 ${penalty.toLocaleString()}円 の支払い命令！`;
+                eventText.innerText = "【事件：労働基準監督署のガサ入れ】 社員の不満爆発。法令違反が発覚し、罰金 " + penalty.toLocaleString() + "円 の支払い命令！";
                 eventText.style.color = "#ff3333";
-                logAction(`[警告] 労基ペナルティにより ${penalty.toLocaleString()}円 損失。`);
+                logAction("[警告] 労基ペナルティにより " + penalty.toLocaleString() + "円 損失。");
             } else if (rand < 0.7) {
                 baseProductPrice = 18000; 
                 eventText.innerText = "【市場経済：業界空前の大ブーム到来】 消費マインドが加熱！製品の市場価格が一時的に1.5倍（18,000円）に上昇。";
@@ -246,7 +247,3 @@
                 eventText.innerText = "特記すべきイベントはありません。安定した市場環境です。";
                 eventText.style.color = "#e0e0e6";
             }
-        }
-
-        // UI表示の更新
-        function updateUI() {
